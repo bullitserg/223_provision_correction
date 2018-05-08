@@ -162,6 +162,11 @@ if __name__ == '__main__':
 
     input_files = [join(input_dir, file) for file in listdir(input_dir) if file.endswith('.xls')]
 
+    if not input_files:
+        print('Файлы для обработки отсутствуют')
+        input('Нажмите ENTER для выхода')
+        exit(0)
+
     for file in input_files:
         print('Обрабатываемый файл: %s' % file)
         if input('Обработать файл? Y/n: ') not in 'YН':
@@ -171,4 +176,5 @@ if __name__ == '__main__':
             setting_parameters_from_file(file)
     print('Все файлы обработаны')
 
+input('Нажмите ENTER для выхода')
 exit(0)
