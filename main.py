@@ -1,4 +1,5 @@
 import xlrd
+import logger_module
 from queries import *
 from collections import OrderedDict
 from os.path import normpath, join
@@ -171,34 +172,41 @@ def setting_parameters_from_data_line(names_line, data_line):
 
 
 if __name__ == '__main__':
+    logger = logger_module.logger()
+    try:
+        input_dir = join(normpath(work_dir), input_dir)
+        done_dir = join(normpath(work_dir), done_dir)
 
-    input_dir = join(normpath(work_dir), input_dir)
-    done_dir = join(normpath(work_dir), done_dir)
+        input_files = [join(input_dir, file) for file in listdir(input_dir) if file.endswith('.xls')]
 
-    input_files = [join(input_dir, file) for file in listdir(input_dir) if file.endswith('.xls')]
+        if not input_files:
+            print('Файлы для обработки отсутствуют')
+            input('Нажмите ENTER для выхода')
+            exit(0)
 
-    if not input_files:
-        print('Файлы для обработки отсутствуют')
+        for file in input_files:
+            if input('Обработать файл %s? Y/n: ' % file) not in 'YН':
+                continue
+            else:
+                print('Обработка файла')
+                # Получаем из файла данные о наименованиях и list данных по всем аукционам
+                n_line, data = get_parameters_from_file(file)
+                print('Обнаружено %s аукционов для корректировки' % len(data))
+
+                for d_line in data:
+                    setting_parameters_from_data_line(n_line, d_line)
+                    print(SEPARATE_LINE)
+
+            file_done_location = move(file, done_dir)
+            print('Файл перемещен в %s' % file_done_location)
+
+        print('Все файлы обработаны')
         input('Нажмите ENTER для выхода')
-        exit(0)
 
-    for file in input_files:
-        if input('Обработать файл %s? Y/n: ' % file) not in 'YН':
-            continue
-        else:
-            print('Обработка файла')
-            # Получаем из файла данные о наименованиях и list данных по всем аукционам
-            n_line, data = get_parameters_from_file(file)
-            print('Обнаружено %s аукционов для корректировки' % len(data))
-
-            for d_line in data:
-                setting_parameters_from_data_line(n_line, d_line)
-                print(SEPARATE_LINE)
-
-        file_done_location = move(file, done_dir)
-        print('Файл перемещен в %s' % file_done_location)
-
-    print('Все файлы обработаны')
-
-input('Нажмите ENTER для выхода')
+    # если при исполнении будут исключения - кратко выводим на терминал, остальное - в лог
+    except Exception as e:
+        logger.fatal('Fatal error! Exit', exc_info=True)
+        print('Critical error: %s' % e)
+        print('More information in log file')
+        exit(1)
 exit(0)
