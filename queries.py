@@ -4,12 +4,12 @@ get_bank_info = '''SELECT
   FROM bnkseek b
   WHERE b.NEWNUM = '%(CONTRACT_BIC)s'
   ;'''
-
 get_procedure_id = '''SELECT
   p.id
 FROM procedures AS p
 WHERE p.registrationNumber = '%(PROCEDURE_NUMBER_CH)s'
-AND p.archive = 0;'''
+AND p.archive = 0
+AND p.actualId IS NULL;'''
 
 get_lot_customer_id = '''SELECT
   lc.id
@@ -17,20 +17,16 @@ FROM procedures AS p
   JOIN lot AS l
     ON l.procedureId = p.id
     AND l.archive = 0
+    AND l.actualId IS NULL
   JOIN lotCustomer AS lc
     ON lc.lotId = l.id
     AND lc.archive = 0
+    AND lc.actualId IS NULL
 WHERE p.registrationNumber = '%(PROCEDURE_NUMBER_CH)s'
-AND p.archive = 0'''
+AND p.archive = 0
+AND p.actualId IS NULL;'''
 
 get_last_insert_id = '''SELECT LAST_INSERT_ID()'''
-
-
-procedure_guarantee_update = '''UPDATE procedures AS p
-SET p.guaranteeFee = '5500.00',
-    p.guaranteeFeePercent = NULL
-WHERE p.id = '%(PROCEDURE_ID)s'
-;'''
 
 request_provision_insert = '''INSERT INTO provision
 SET
@@ -72,7 +68,13 @@ SET `enabledRequestProvision` = %(enabledRequestProvision)s,
 WHERE lc.id = '%(LOT_CUSTOMER_ID)s'
 ;'''
 
+request_end_datetime_update = '''UPDATE procedures p
+SET p.requestEndDateTime = '%(REQUEST_END_GIVE_DATETIME)s'
+WHERE p.id = '%(PROCEDURE_ID)s';'''
 
+request_review_end_datetime_update = '''UPDATE procedures p
+SET p.requestReviewFirstPartsDateTime = '%(REQUEST_REVIEW_END_DATETIME)s'
+WHERE p.id = '%(PROCEDURE_ID)s';'''
 
 
 
