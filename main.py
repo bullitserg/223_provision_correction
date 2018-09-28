@@ -30,14 +30,14 @@ def get_parameters_from_file(input_file):
     rb = xlrd.open_workbook(input_file)
 
     sheet = rb.sheet_by_index(0)
-    names_row = sheet.row_values(0, start_colx=0, end_colx=9)
-    keys_row = sheet.row_values(1, start_colx=0, end_colx=9)
+    names_row = sheet.row_values(0, start_colx=0, end_colx=10)
+    keys_row = sheet.row_values(1, start_colx=0, end_colx=10)
     line_number = 2
     data_dicts = []
 
     while True:
         try:
-            data_row = sheet.row_values(line_number, start_colx=0, end_colx=9)
+            data_row = sheet.row_values(line_number, start_colx=0, end_colx=10)
         except IndexError:
             break
 
@@ -80,17 +80,24 @@ def setting_parameters_from_data_line(names_line, data_line):
             data_line['CONTRACT_BANK_NAME'], data_line['CONTRACT_BANK_ADDRESS'] = bank_info[0]
         else:
             print('''Банк с БИК %(CONTRACT_BIC)s не найден''' % data_line)
-            exit(0)
+            return
 
     # находим бд, в которой содержатся данные об указанной процедуре
     procedure_db_info = found_procedure_223_db(data_line['PROCEDURE_NUMBER_CH'])
     if not procedure_db_info:
         print('''Процедура %(PROCEDURE_NUMBER_CH)s не найдена''' % data_line)
-        exit(0)
+        return
+
+    if not data_line['LOT_NUMBER_CH']:
+        print('Не указан номер лота для процедуры %s' % data_line['PROCEDURE_NUMBER_CH'])
+        return
+
+    print(SEPARATE_LINE)
+    print(SEPARATE_LINE)
 
     # выводим основные параметры на консоль
     print('Тип процедуры: \'%s\' (%s)' % (procedure_db_info['name'], procedure_db_info['db']))
-    print(SEPARATE_LINE)
+
     for pos in range(len(names_line)):
         print('''%s: '%s\'''' % (names_line[pos], data_line_values[pos]))
 
@@ -197,8 +204,9 @@ if __name__ == '__main__':
                     setting_parameters_from_data_line(n_line, d_line)
                     print(SEPARATE_LINE)
 
-            file_done_location = move(file, done_dir)
-            print('Файл перемещен в %s' % file_done_location)
+            if input('Переместить обработанный файл %s? Y/n: ' % file) in 'YН':
+                file_done_location = move(file, done_dir)
+                print('Файл перемещен в %s' % file_done_location)
 
         print('Все файлы обработаны')
         input('Нажмите ENTER для выхода')

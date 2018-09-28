@@ -4,6 +4,7 @@ get_bank_info = '''SELECT
   FROM bnkseek b
   WHERE b.NEWNUM = '%(CONTRACT_BIC)s'
   ;'''
+
 get_procedure_id = '''SELECT
   p.id
 FROM procedures AS p
@@ -23,6 +24,7 @@ FROM procedures AS p
     AND lc.archive = 0
     AND lc.actualId IS NULL
 WHERE p.registrationNumber = '%(PROCEDURE_NUMBER_CH)s'
+AND l.number = %(LOT_NUMBER_CH)s
 AND p.archive = 0
 AND p.actualId IS NULL;'''
 
